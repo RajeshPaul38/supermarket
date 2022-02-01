@@ -1,0 +1,486 @@
+openapi: 3.0.2
+info:
+  title: Supermarket Content Delivery
+  description: This is the API documentation for the content delivery through supermarket
+  termsOfService: http://swagger.io/terms/
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+- url: https://localhost:3000/api/v1
+- url: http://localhost:3000/api/v1
+tags:
+- name: audit
+  description: Everything about your Audit Contents
+paths:
+  /content/audit-contents:
+    get:
+      tags:
+      - audit
+      summary: Get list of existing audit contents
+      description: Get list of existing audit contents
+      operationId: getAuditContents
+      parameters:
+      - name: page_no
+        in: query
+        description: Page number for listing content
+        required: false
+        schema:
+          type: integer
+          example: 1
+      - name: page_size
+        in: query
+        description: Page number for listing content
+        required: false
+        schema:
+          type: integer
+          example: 10
+      - name: name
+        in: query
+        description: Search by name of audit content
+        required: false
+        schema:
+          type: string
+          example: "CIS"
+      - name: deprecated
+        in: query
+        description: Filter by deprecated flag
+        required: false
+        schema:
+          type: boolean
+          example: false
+      - name: is_premium
+        in: query
+        description: Filter by premium flag
+        required: false
+        schema:
+          type: boolean
+          example: false
+      responses:
+        200:
+          description: 'Success: List of audit contents in response'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditContentSmall'
+    post:
+      tags:
+      - audit
+      summary: Create a new audit content
+      operationId: addAuditContent
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - tarball
+              properties:
+                tarball:
+                  type: string
+                  description: .tgz file for the audit content
+                  format: binary
+        required: true
+      responses:
+        200:
+          description: Audit content successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentSuccessfullyCreatedResponse'
+        400:
+          description: Audit version already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionExistsResponse'
+  /content/audit-contents/{name}:
+    get:
+      tags:
+      - audit
+      summary: Find the latest audit content by name
+      description: Returns a single audit content
+      operationId: getAuditContentByName
+      parameters:
+      - name: name
+        in: path
+        description: Name of audit content
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditContentFull'
+        404:
+          description: Audit content not found
+          content: {}
+  /content/audit-contents/{name}/versions/{version}:
+    get:
+      tags:
+      - audit
+      summary: Find audit content by name and version
+      description: Finds a single audit content with the given name and version
+      operationId: getAuditContentByNameAndVersion
+      parameters:
+      - name: name
+        in: path
+        description: Name of audit content
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: path
+        description: Version of audit content
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditContentFull'
+        404:
+          description: Audit content not found
+          content: {}
+  /content/audit-contents/{name}/download:
+    get:
+      tags:
+      - audit
+      summary: Download the latest audit content by name
+      description: Download the latest version of the audit content with the given name
+      operationId: downloadAuditContentByName
+      parameters:
+      - name: name
+        in: path
+        description: Name of audit content
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful download
+          content:
+            application/tar+gzip:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: Audit content not found
+          content: {}
+  /content/audit-contents/{name}/versions/{version}/download:
+    get:
+      tags:
+      - audit
+      summary: Find audit content by name and version
+      description: Finds a single audit content with the given name and version
+      operationId: downloadAuditContentByNameAndVersion
+      parameters:
+      - name: name
+        in: path
+        description: Name of audit content
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: path
+        description: Version of audit content to return
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful download
+          content:
+            application/tar+gzip:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: Audit content not found
+          content: {}
+  /content/remediation-contents:
+    get:
+      tags:
+      - remediation
+      summary: Get list of existing remediation contents
+      description: Get list of existing remediation contents
+      operationId: getRemediationContents
+      responses:
+        200:
+          description: 'Success: List of remediation contents in response'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RemediationContentSmall'
+    post:
+      tags:
+      - remediation
+      summary: Create a new remediation content
+      description: Create a new remediation content
+      operationId: addRemediationContent
+      parameters:
+      - name: audit_name
+        in: query
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - tarball
+              properties:
+                tarball:
+                  type: string
+                  description: .tgz file for the audit content
+                  format: binary
+        required: true
+      responses:
+        200:
+          description: Remediation content successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentSuccessfullyCreatedResponse'
+        400:
+          description: Remediation version already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionExistsResponse'
+  /content/remediation-contents/{name}:
+    get:
+      tags:
+      - remediation
+      summary: Find the latest remediation content by name
+      description: Returns a single remediation content
+      operationId: getRemediationContentByName
+      parameters:
+      - name: name
+        in: path
+        description: Name of remediation content to return
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemediationContentFull'
+        404:
+          description: Remediation content not found
+          content: {}
+  /content/remediation-contents/{name}/versions/{version}:
+    get:
+      tags:
+      - remediation
+      summary: Find remediation content by name and version
+      description: Finds a single remediation content with the given name and version
+      operationId: getRemediationContentByNameAndVersion
+      parameters:
+      - name: name
+        in: path
+        description: Name of remediation content to return
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: path
+        description: Version of remediation content to return
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemediationContentFull'
+        404:
+          description: Remediation content not found
+          content: {}
+  /content/remediation-contents/{name}/download:
+    get:
+      tags:
+      - remediation
+      summary: Download the latest remediation content by name
+      description: Download the latest version of the remediation content with the given name
+      operationId: downloadRemediationContentByName
+      parameters:
+      - name: name
+        in: path
+        description: Name of remediation content
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful download
+          content:
+            application/tar+gzip:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: Remediation content not found
+          content: {}
+  /content/remediation-contents/{name}/versions/{version}/download:
+    get:
+      tags:
+      - remediation
+      summary: Find remediation content by name and version
+      description: Finds a single remediation content with the given name and version
+      operationId: downloadRemediationContentByNameAndVersion
+      parameters:
+      - name: name
+        in: path
+        description: Name of remediation content
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: path
+        description: Version of remediation content to return
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful download
+          content:
+            application/tar+gzip:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: Remediation content not found
+          content: {}
+components:
+  schemas:
+    VersionExistsResponse:
+      required:
+      - error_code
+      - error_messages
+      type: object
+      properties:
+        error_code:
+          type: string
+          example: INVALID_DATA
+        error_messages:
+          type: array
+          items:
+            type: string
+            example: Version has already been taken
+    ContentSuccessfullyCreatedResponse:
+      type: object
+      properties:
+        uri:
+          type: string
+          description: URL for the uploaded content
+    AuditContentSmall:
+      type: object
+      properties:
+        name:
+          type: string
+          example: cis-ubuntu20.04lts-level1-workstation
+        latest_version:
+          type: string
+          example: 1.0.0
+        benchmark:
+          type: string
+          example: CIS
+        title:
+          type: string
+          example: CIS Ubuntu Linux 20.04 LTS Benchmark Level 1 - Workstation
+        is_premium:
+          type: boolean
+    AuditContentFull:
+      type: object
+      properties:
+        name:
+          type: string
+          example: cis-ubuntu20.04lts-level1-workstation
+        version:
+          type: string
+          example: 1.0.0
+        benchmark:
+          type: string
+          example: CIS
+        title:
+          type: string
+          example: CIS Ubuntu Linux 20.04 LTS Benchmark Level 1 - Workstation
+        summary:
+          type: string
+          example: CIS Ubuntu Linux 20.04 LTS Benchmark Level 1 - Workstation translated from SCAP
+        description:
+          type: string
+        maintainer:
+          type: string
+          example: Chef Software, Inc.
+        copyright:
+          type: string
+          example: Chef Software, Inc.
+        copyright_email:
+          type: string
+          example: support@chef.io
+        license:
+          type: string
+          example: Proprietary, All rights reserved
+        inspec_version:
+          type: string
+          example: 1.0.0
+        is_premium:
+          type: boolean
+        download_url:
+          type: string
+    RemediationContentSmall:
+      type: object
+      properties:
+        name:
+          type: string
+          example: remediation_cis_ubuntu20
+        latest_version:
+          type: string
+          example: 1.0.0
+        benchmark:
+          type: string
+          example: CIS
+        platform:
+          type: string
+          example: Ubuntu20
+        is_premium:
+          type: boolean
+    RemediationContentFull:
+      type: object
+      properties:
+        name:
+          type: string
+          example: remediation_cis_ubuntu20
+        latest_version:
+          type: string
+          example: 1.0.0
+        benchmark:
+          type: string
+          example: CIS
+        platform:
+          type: string
+          example: Ubuntu20
+        is_premium:
+          type: boolean
